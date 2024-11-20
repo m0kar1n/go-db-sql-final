@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,9 +30,7 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -45,19 +44,20 @@ func TestAddGetDelete(t *testing.T) {
 	parcel.Number = id
 	stored, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, parcel, stored)
+	assert.Equal(t, parcel, stored)
 	// delete
 	err = store.Delete(id)
 	require.NoError(t, err)
+	// deleted check
+	stored, err = store.Get(id)
+	require.Error(t, err)
 }
 
 // TestSetAddress проверяет обновление адреса
 func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -73,16 +73,14 @@ func TestSetAddress(t *testing.T) {
 	// check
 	stored, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, newAddress, stored.Address)
+	assert.Equal(t, newAddress, stored.Address)
 }
 
 // TestSetStatus проверяет обновление статуса
 func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -97,16 +95,14 @@ func TestSetStatus(t *testing.T) {
 	// check
 	stored, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, ParcelStatusSent, stored.Status)
+	assert.Equal(t, ParcelStatusSent, stored.Status)
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
 func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -138,7 +134,7 @@ func TestGetByClient(t *testing.T) {
 	// check
 	for _, parcel := range storedParcels {
 		original, exists := parcelMap[parcel.Number]
-		require.True(t, exists)
-		require.Equal(t, original, parcel)
+		assert.True(t, exists)
+		assert.Equal(t, original, parcel)
 	}
 }

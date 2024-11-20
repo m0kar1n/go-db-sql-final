@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "modernc.org/sqlite"
 )
@@ -23,7 +22,6 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 		sql.Named("created_at", p.CreatedAt),
 	)
 	if err != nil {
-		fmt.Println(err)
 		return 0, err
 	}
 	id, err := res.LastInsertId()
@@ -39,7 +37,6 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 	p := Parcel{}
 	err := row.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
 	if err != nil {
-		fmt.Println(err)
 		return p, err
 	}
 
@@ -49,6 +46,11 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	rows, err := s.db.Query("SELECT number, client, status, address, created_at FROM parcel WHERE client = :client",
 		sql.Named("client", client))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var res []Parcel
 	for rows.Next() {
 		p := Parcel{}
